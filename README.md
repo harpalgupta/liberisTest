@@ -17,9 +17,9 @@ and output a Boolean value with the result of the decision.
 You can find some example inputs in the `inputs` folder. The eligibility (as decided by your code)
 should be as follows:
 
-* Input 1 - Eligable
-* Input 2 - Eligable
-* Input 3 - Ineligable
+* Input 1 - Eligible
+* Input 2 - Eligible
+* Input 3 - Ineligible
 
 You can spend as long as you like on this test, and provide as much supporting information
 (comments/tests) as you like. You can choose to write your solution for the test in

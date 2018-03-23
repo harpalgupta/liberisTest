@@ -27,5 +27,5 @@ plain JavaScript or TypeScript.
 
 ## Next steps
 
-Uploading your solution somewhere private, like a [private Gist](https://gist.github.com/), and email
+Upload your solution somewhere private, like a [private Gist](https://gist.github.com/), and email
 the link to [coding-test@libers.co.uk](coding-test@liberis.co.uk).

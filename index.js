@@ -35,7 +35,7 @@ const elegibilityCheck = input => {
 
   //if requested amount above 25k and monthsInBusiness is not more than 12 months reject
   if (!(monthsInBusiness > 12) && amountRequested > 25000) {
-    console.log("Above 25k and monthsInBusiness is not greater than 12 months");
+    console.log("Above 25k and monthsInBusiness is not greater than 12 months therefore not enough transactions");
     return false;
   }
 

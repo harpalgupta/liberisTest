@@ -1,9 +1,16 @@
+//expect json file to be parsed as argument for example index.js ./inputs/1.json
+const inputFile = process.argv[2]
 //take in example input
-const input = require("./inputs/2.json");
-//assume current date is march 2018
-const currentDate = { year: 2018, month: "03" };
+const input = require(inputFile);
+
+
+const {reformatYearMonth,padMonths,createTransactionObject} = require('./utils/index')
+
+
 
 const elegibilityCheck = input => {
+//assume current date is march 2018
+  const currentDate = { year: 2018, month: "03" };
   const { amountRequested, timeInBusiness, transactions } = input;
   //loan request amount between 5000 and 50000
   if (amountRequested >= 5000 && amountRequested <= 50000) {
@@ -22,101 +29,108 @@ const elegibilityCheck = input => {
 
   //if requested amount above 25k and monthsInBusiness is not more than 12 months reject
   if (!(monthsInBusiness > 12) && amountRequested > 25000) {
+    console.log("above 25k and monthsInBusiness is not more than 12 months");
     return false;
   }
 
-  //* The transaction average in each month must exceed the requested amount
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-  ];
-  const totalPerMonth = {};
 
-  const transactValueMonth = transactions.reduce(
-    (acc, curr, index) => {
-      const { value } = curr;
-      const dateConverted = new Date(curr.date);
-      const year = dateConverted.getFullYear();
-      let month = dateConverted.getMonth() + 1;
-      month = month < 10 ? "0" + month : month;
-      acc.oldestTransact =
-        dateConverted < acc.oldestTransact ? dateConverted : acc.oldestTransact;
+  let transactValueMonth = createTransactionObject(transactions)
 
-      if (acc.transactPerMonth[`${year}${month}`]) {
-        acc.transactPerMonth[`${year}${month}`] += value;
-      } else {
-        acc.transactPerMonth[`${year}${month}`] = value;
-      }
+  // transactions.reduce(
+  //   (acc, curr, index) => {
+  //     const { value } = curr;
+  //     const dateConverted = new Date(curr.date);
+  //     const year = dateConverted.getFullYear();
+  //     let month = dateConverted.getMonth() + 1;
+  //     month = month < 10 ? "0" + month : month;
+  //     acc.oldestTransact =
+  //       dateConverted < acc.oldestTransact ? dateConverted : acc.oldestTransact;
 
-      acc.years = { ...acc.years, [year]: 0 };
+  //     if (acc.transactPerMonth[`${year}${month}`]) {
+  //       acc.transactPerMonth[`${year}${month}`] += value;
+  //     } else {
+  //       acc.transactMonths++;
+  //       acc.transactPerMonth[`${year}${month}`] = value;
+  //     }
 
-      //return transactions per month object
-      return acc;
-    },
-    { years: {}, transactPerMonth: {}, oldestTransact: Date.now() }
-  );
+  //     acc.years = { ...acc.years, [year]: 0 };
+  //     acc.totalValue += value;
+  //     //return transactions per month object
+  //     return acc;
+  //   },
+  //   {
+  //     years: {},
+  //     transactPerMonth: {},
+  //     oldestTransact: Date.now(),
+  //     transactMonths: 0,
+  //     totalValue: 0
+  //   }
+  // );
+
+
   //add missing months
+  transactValueMonth.missingMonths = 0;
+
   const oldestYear = transactValueMonth.oldestTransact.getFullYear();
   let oldestMonth = transactValueMonth.oldestTransact.getMonth() + 1;
-  //reformat month with 0
-  oldestMonth = oldestMonth < 10 ? "0" + oldestMonth : oldestMonth;
-  oldestTrans=oldestYear+oldestMonth
+  //reformat year month
 
-  currentDate.year - 1, currentDate.month
-
-
-  console.log("MMMM", oldestTrans);
-
-  const monthsPadding = [
-    "01",
-    "02",
-    "03",
-    "04",
-    "05",
-    "06",
-    "07",
-    "08",
-    "09",
-    "10",
-    "11",
-    "12"
-  ];
-  const years = Object.keys(transactValueMonth.years);
-  years.forEach(year=>{
-    monthsPadding.forEach((month,index)=>{
-      const yearMonth=year+month
-      if (yearMonth*1>=oldestTrans*1&&yearMonth<=(currentDate.year+currentDate.month)) {
-      if (!transactValueMonth.transactPerMonth[yearMonth]){
-        transactValueMonth.transactPerMonth[yearMonth]=null
-       }
-      }
-    })
-  })
+   const oldestTrans= reformatYearMonth(oldestYear,oldestMonth)
+  //padding out months with null vals  
+  transactValueMonth={...padMonths(transactValueMonth,oldestTrans,currentDate)}
 
   console.log("<<<<<<<", transactValueMonth);
 
-  console.log(currentDate.year - 1, currentDate.month);
   if (
     transactValueMonth.oldestTransact.getFullYear() <= currentDate.year - 1 &&
     transactValueMonth.oldestTransact.getMonth() + 1 <= currentDate.month
   ) {
+    console.log("old enough transaction logs available", oldestTrans);
+  } else {
     console.log(
-      "old enough transaction logs available",
-      transactValueMonth.oldestTransact.getFullYear(),
-      transactValueMonth.oldestTransact.getMonth() + 1
+      "old enough transaction logs not available oldest log is",
+      oldestTrans
     );
-  } else return false;
+    return false;
+  }
 
+  //check if empty months for 25k
+  console.log("requested", amountRequested);
+  if (amountRequested > 25000) {
+    console.log("more than 25k");
+    if (transactValueMonth.missingMonths > 0) {
+      console.log("requested 25000 but has missing transaction months");
+      return false;
+    }
+  }
+
+  //check all months provided are greater then amountRequested
+  for (const yearMonth in transactValueMonth.transactPerMonth) {
+    if (transactValueMonth.transactPerMonth[yearMonth]) {
+      if (amountRequested > transactValueMonth.transactPerMonth[yearMonth]) {
+        console.log(
+          "found transaction ",
+          yearMonth,
+          transactValueMonth.transactPerMonth[yearMonth],
+          "which is lower then amount requested"
+        );
+        return false;
+      }
+    }
+  }
+
+  //check average value for missing months
+  if (transactValueMonth.missingMonths > 0) {
+    const averagePerMonth =
+      transactValueMonth.totalValue / transactValueMonth.transactMonths;
+    if (averagePerMonth < amountRequested) {
+      console.log("average per month lower then amount requested");
+      return false;
+    }
+
+    1;
+  }
+//if no tests failed return true
   return true;
 };
 

@@ -36,40 +36,9 @@ const elegibilityCheck = input => {
 
   let transactValueMonth = createTransactionObject(transactions)
 
-  // transactions.reduce(
-  //   (acc, curr, index) => {
-  //     const { value } = curr;
-  //     const dateConverted = new Date(curr.date);
-  //     const year = dateConverted.getFullYear();
-  //     let month = dateConverted.getMonth() + 1;
-  //     month = month < 10 ? "0" + month : month;
-  //     acc.oldestTransact =
-  //       dateConverted < acc.oldestTransact ? dateConverted : acc.oldestTransact;
+  
 
-  //     if (acc.transactPerMonth[`${year}${month}`]) {
-  //       acc.transactPerMonth[`${year}${month}`] += value;
-  //     } else {
-  //       acc.transactMonths++;
-  //       acc.transactPerMonth[`${year}${month}`] = value;
-  //     }
-
-  //     acc.years = { ...acc.years, [year]: 0 };
-  //     acc.totalValue += value;
-  //     //return transactions per month object
-  //     return acc;
-  //   },
-  //   {
-  //     years: {},
-  //     transactPerMonth: {},
-  //     oldestTransact: Date.now(),
-  //     transactMonths: 0,
-  //     totalValue: 0
-  //   }
-  // );
-
-
-  //add missing months
-  transactValueMonth.missingMonths = 0;
+  
 
   const oldestYear = transactValueMonth.oldestTransact.getFullYear();
   let oldestMonth = transactValueMonth.oldestTransact.getMonth() + 1;
